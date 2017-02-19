@@ -1,0 +1,4 @@
+# Jetbrains
+.idea/*
+
+# Add other file extensions or files that should not go to source control, here!
