@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "1_gaussian_smoothing/driver.cpp"
+
 using namespace std;
 
 int main()
@@ -20,7 +22,7 @@ int main()
   cout << "3 - Gaussian Pyramid" << endl;
   cout << "4 - Exit Program." << endl;
   cout << "" << endl;
-  cout << "Select an option: <1,2,3,4> ";
+  cout << "Select an option <1,2,3,4> : ";
 
   // do ask user to select an option while no valid option has been presented
   do
@@ -36,7 +38,7 @@ int main()
     {
       cout << "Invalid Selection." << endl;
       cout << "" << endl;
-      cout << "Select an option: <1,2,3,4> ";
+      cout << "Select an option <1,2,3,4> : ";
     }
 
   } while (loopFlag);
@@ -45,7 +47,7 @@ int main()
   switch (userChoice)
   {
     case 1:
-      // todo - hook in gaussian smoothing
+      displayGaussianSmoothingMenu();
       break;
 
     case 2:
@@ -69,17 +71,3 @@ int main()
 }
 
 
-/*
-###########
-# Main Menu
-###########
-
-Please select from one of the options below.
-
-1 - Gaussian Smoothing
-2 - Edge Detection
-3 - Gaussian Pyramid
-4 - Exit Program.
-
-Selection: <1,2,3,4>
- */
