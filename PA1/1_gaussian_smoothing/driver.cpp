@@ -1,8 +1,13 @@
+#include <iostream>
+#include <string>
+
 #include "src/1D_Gaussian_Smoothing.cpp"
 
-#include <iostream>
-
 using namespace std;
+
+/* function prototypes */
+void process1D_Gaussian_Smoothing();
+
 
 void displayGaussianSmoothingMenu()
 {
@@ -48,7 +53,7 @@ void displayGaussianSmoothingMenu()
   switch (userChoice)
   {
     case 1:
-      // todo - hook in 1D gaussian smoothing
+      process1D_Gaussian_Smoothing();
       break;
 
     case 2:
@@ -68,3 +73,58 @@ void displayGaussianSmoothingMenu()
       break;
   }
 }
+
+
+void process1D_Gaussian_Smoothing()
+{
+  int sigma;
+  string pathToImage;
+  int returnStatus;
+
+  // gather inputs
+  cout << "" << endl;
+  cout << "Enter a value for sigma: ";
+  cin >> sigma;
+  cout << "Enter the path to the image: ";
+  cin >> pathToImage;
+
+  // run the 1D Gaussian Smoothing, with inputs
+  returnStatus = perform1D_Gaussian_Smoothing(sigma, pathToImage);
+
+  // check the results for any errors
+  if (returnStatus == -1)
+  {
+    cout << "ERROR - Could not find the file located at '" << pathToImage.c_str() << "'." << endl;
+  }
+  else if (returnStatus != 0)
+  {
+    cout << "ERROR - There was an error with performing the 1D_Gaussian_Smoothing" << endl;
+  }
+  else
+  {
+    cout << "Successfully performed 1D Gaussian Smoothing. Look for an output file in the directory of your image." << endl;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
