@@ -2,7 +2,16 @@
 #include <fstream.h>
 #include <stdlib.h>
 
-void WriteImage(char fname[], int **fimage, int M, int N, int Q)
+/*
+ * Code for writing to a PGM image.
+ *
+ * @param fname - the filename of the image
+ * @param fimage - a 3D pointer array to hold the image
+ * @param M - the width of the image
+ * @param N - the height of the image
+ * @param Q - the maximum grey value supported by the image
+ */
+void WriteImage(const char* fname, int **fimage, int M, int N, int Q)
 {
  int i, j;
  unsigned char *image;
