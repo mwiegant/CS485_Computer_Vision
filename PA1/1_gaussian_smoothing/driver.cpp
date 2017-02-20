@@ -3,12 +3,14 @@
 
 #include "src/1D_Gaussian_Smoothing.cpp"
 #include "src/2D_Gaussian_Smoothing_1_mask.cpp"
+#include "src/2D_Gaussian_Smoothing_2_masks.cpp"
 
 using namespace std;
 
 /* function prototypes */
 void process1D_Gaussian_Smoothing();
 void process2D_Gaussian_Smoothing_1_mask();
+void process2D_Gaussian_Smoothing_2_masks();
 
 void displayGaussianSmoothingMenu()
 {
@@ -62,7 +64,7 @@ void displayGaussianSmoothingMenu()
       break;
 
     case 3:
-      // todo - 2D Gaussian Smoothing [2 1D Masks]
+      process2D_Gaussian_Smoothing_2_masks();
       break;
 
     case 4:
@@ -90,7 +92,7 @@ void process1D_Gaussian_Smoothing()
   cin >> pathToImage;
 
   // run the 1D Gaussian Smoothing, with inputs
-  returnStatus = perform1D_Gaussian_Smoothing(sigma, pathToImage);
+  returnStatus = Gauss_1D_1Mask::perform1D_Gaussian_Smoothing(sigma, pathToImage);
 
   // check the results for any errors
   if (returnStatus == -1)
@@ -122,13 +124,30 @@ void process2D_Gaussian_Smoothing_1_mask()
   cin >> pathToImage;
 
   // run the 1D Gaussian Smoothing, with inputs
-  perform2D_Gaussian_Smoothing_1_mask(sigma, pathToImage);
+  Gauss_2D_1Mask::perform2D_Gaussian_Smoothing_1_mask(sigma, pathToImage);
 
   cout << "Completed 2D Gaussian Smoothing operation." << endl;
 }
 
 
+void process2D_Gaussian_Smoothing_2_masks()
+{
+  int sigma;
+  string pathToImage;
+  int returnStatus;
 
+  // gather inputs
+  cout << "" << endl;
+  cout << "Enter a value for sigma: ";
+  cin >> sigma;
+  cout << "Enter the path to the image: ";
+  cin >> pathToImage;
+
+  // run the 1D Gaussian Smoothing, with inputs
+  Gauss_2D_2Mask::perform2D_Gaussian_Smoothing_2_masks(sigma, pathToImage);
+
+  cout << "Completed 2D Gaussian Smoothing operation." << endl;
+}
 
 
 
