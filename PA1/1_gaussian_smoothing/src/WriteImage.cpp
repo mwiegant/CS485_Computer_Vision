@@ -1,6 +1,6 @@
-#include <iostream.h>
-#include <fstream.h>
-#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
 
 /*
  * Code for writing to a PGM image.

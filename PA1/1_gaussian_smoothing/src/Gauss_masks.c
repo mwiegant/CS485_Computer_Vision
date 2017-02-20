@@ -1,3 +1,6 @@
+#ifndef GAUSS_MASKS
+#define GAUSS_MASKS
+
 #include <math.h>
 
 #define pi 3.141592653589793
@@ -98,3 +101,4 @@ void Gauss_2D_mask(float sigma, int maskSizeX, int maskSizeY, float** mask)
 	}
 }
 
+#endif //GAUSS_MASKS

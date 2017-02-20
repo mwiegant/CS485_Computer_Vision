@@ -2,12 +2,13 @@
 #include <string>
 
 #include "src/1D_Gaussian_Smoothing.cpp"
+#include "src/2D_Gaussian_Smoothing_1_mask.cpp"
 
 using namespace std;
 
 /* function prototypes */
 void process1D_Gaussian_Smoothing();
-
+void process2D_Gaussian_Smoothing_1_mask();
 
 void displayGaussianSmoothingMenu()
 {
@@ -57,7 +58,7 @@ void displayGaussianSmoothingMenu()
       break;
 
     case 2:
-      // todo - 2D Gaussian Smoothing [2D Mask]
+      process2D_Gaussian_Smoothing_1_mask();
       break;
 
     case 3:
@@ -107,7 +108,24 @@ void process1D_Gaussian_Smoothing()
 }
 
 
+void process2D_Gaussian_Smoothing_1_mask()
+{
+  int sigma;
+  string pathToImage;
+  int returnStatus;
 
+  // gather inputs
+  cout << "" << endl;
+  cout << "Enter a value for sigma: ";
+  cin >> sigma;
+  cout << "Enter the path to the image: ";
+  cin >> pathToImage;
+
+  // run the 1D Gaussian Smoothing, with inputs
+  perform2D_Gaussian_Smoothing_1_mask(sigma, pathToImage);
+
+  cout << "Completed 2D Gaussian Smoothing operation." << endl;
+}
 
 
 

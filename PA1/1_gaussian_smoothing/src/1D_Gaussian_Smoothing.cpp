@@ -108,7 +108,7 @@ void performSmoothing(vector<float>& dataIn, vector<float>& dataOut, int maskSiz
     for(int index = startIndex; index <= endIndex; index++, maskIndex++)
     {
       // check if the current index is a valid index ( > 0 && < dataSize )
-      if( index > 0 && index < dataSize)
+      if( index >= 0 && index < dataSize)
       {
         // increment sum with value at dataIn[index] * mask[maskIndex]
         sum += ( dataIn[index] * mask[maskIndex] );
