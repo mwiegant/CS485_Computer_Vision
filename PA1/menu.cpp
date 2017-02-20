@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "1_gaussian_smoothing/driver.cpp"
+#include "2_edge_detection/driver.cpp"
 
 using namespace std;
 
@@ -51,7 +52,7 @@ int main()
       break;
 
     case 2:
-      // todo - hook in edge detection
+      displayEdgeDetectionMenu();
       break;
 
     case 3:
