@@ -1,5 +1,4 @@
 #include <fstream>
-#include <vector>
 
 #include "Gauss_masks.c"
 #include "ReadImage.cpp"
