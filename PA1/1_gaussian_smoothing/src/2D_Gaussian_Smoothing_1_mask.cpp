@@ -13,7 +13,7 @@ void performNormalization(int** dataOut, int& numRows, int& numColumns, int& max
 string buildOutputFilename(string& filepath, int& sigma);
 
 /*
- * Performs 1D Gaussian Smoothing by calling helper functions to perform
+ * Performs 2D Gaussian Smoothing by calling helper functions to perform
  * the various steps required.
  *
  * If any step fails, an error is returned.
