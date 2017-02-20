@@ -114,7 +114,6 @@ void process2D_Gaussian_Smoothing_1_mask()
 {
   int sigma;
   string pathToImage;
-  int returnStatus;
 
   // gather inputs
   cout << "" << endl;
@@ -134,7 +133,6 @@ void process2D_Gaussian_Smoothing_2_masks()
 {
   int sigma;
   string pathToImage;
-  int returnStatus;
 
   // gather inputs
   cout << "" << endl;
