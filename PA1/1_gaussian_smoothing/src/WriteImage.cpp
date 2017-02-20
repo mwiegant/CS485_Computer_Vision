@@ -1,3 +1,6 @@
+#ifndef WRITE_IMAGE
+#define WRITE_IMAGE
+
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -46,3 +49,5 @@ void WriteImage(const char* fname, int **fimage, int M, int N, int Q)
  ofp.close();
 
 }
+
+#endif //WRITE_IMAGE

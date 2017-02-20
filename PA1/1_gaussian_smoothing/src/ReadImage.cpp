@@ -1,3 +1,6 @@
+#ifndef READ_IMAGE
+#define READ_IMAGE
+
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -69,3 +72,5 @@ void ReadImage(const char* fname, int ***fimage, int& M, int& N, int& Q)
    for(j=0; j<M; j++)
      (*fimage)[i][j]=(int)image[i*M+j];
 }
+
+#endif //READ_IMAGE
