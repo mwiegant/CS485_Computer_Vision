@@ -9,6 +9,7 @@ using namespace std;
 namespace Gauss_2D_2Mask {
 
   /* function prototypes */
+  void allocate2DArrays(int** &array, int& rows, int& columns);
   void performHorizontalSmoothing(int** dataIn, int** dataOut, int& numRows, int& numColumns, int maskSize, float* mask);
   void performVerticalSmoothing(int** dataIn, int** dataOut, int& numRows, int& numColumns, int maskSize, float* mask);
   void performNormalization(int** dataOut, int& numRows, int& numColumns, int& maxGreyValue);
@@ -29,8 +30,8 @@ namespace Gauss_2D_2Mask {
     int maskSize = 5 * sigma;
     float* mask = new float[maskSize];
     int*** dataIn;
-    int** dataIntermediate;
     int** dataOut;
+    int** dataIntermediate;
     int numRows, numColumns, maxGreyValue;
 
     // calculate the mask
@@ -39,19 +40,15 @@ namespace Gauss_2D_2Mask {
     // extract all data from the file
     ReadImage(pathToImage.c_str(), dataIn, numRows, numColumns, maxGreyValue);
 
-    // allocate space for dataOut
-    dataOut = new int*[numColumns];
-
-    for(int i = 0; i < numColumns; i++)
-    {
-      dataOut[i] = new int[numRows];
-    }
+    // allocate space for dataOut and dataIntermediate
+    allocate2DArrays(dataOut, numRows, numColumns);
+    allocate2DArrays(dataIntermediate, numRows, numColumns);
 
     // perform horizontal smoothing across the data
-    performHorizontalSmoothing( (*dataIn), dataOut, numRows, numColumns, maskSize, mask);
+    performHorizontalSmoothing( (*dataIn), dataIntermediate, numRows, numColumns, maskSize, mask);
 
     // perform vertical smoothing across the data
-    performHorizontalSmoothing( dataOut, dataOut, numRows, numColumns, maskSize, mask);
+    performHorizontalSmoothing( dataIntermediate, dataOut, numRows, numColumns, maskSize, mask);
 
     // normalize the data
 //  performNormalization(dataOut, numRows, numColumns, maxGreyValue);
@@ -61,6 +58,22 @@ namespace Gauss_2D_2Mask {
 
     // output results into a new file
     WriteImage(pathToImage.c_str(), dataOut, numRows, numColumns, maxGreyValue);
+  }
+
+
+  /*
+   * Allocates space for 2D arrays, given an "array".
+   *
+   * Allocates space given the dimensions "rows" and "columns",
+   * where the first dimension will be the number of columns
+   * and the second dimension will be the number of rows in each column.
+   */
+  void allocate2DArrays(int** &array, int& rows, int& columns)
+  {
+    array = new int*[columns];
+
+    for(int i = 0; i < columns; i++)
+      array[i] = new int[rows];
   }
 
 
