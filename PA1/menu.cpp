@@ -2,6 +2,7 @@
 
 #include "1_gaussian_smoothing/driver.cpp"
 #include "2_edge_detection/driver.cpp"
+#include "3_gaussian_pyramid/driver.cpp"
 
 using namespace std;
 
@@ -56,7 +57,7 @@ int main()
       break;
 
     case 3:
-      // todo - hook in gaussian pyramid
+      displayGaussianPyramidMenu();
       break;
 
     case 4:
