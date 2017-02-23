@@ -33,3 +33,8 @@ have issues compiling on distributions of Linux. To run this project, navigate t
 directory where this README is located, and run 'make' in the terminal. This should compile
 and produce an executable named 'pa1'. To run the program, after the executable has been
 created, run './pa1' in the terminal. The root menu for this program should appear.
+
+
+# Notes about Assumptions
+
+This project assumes that inputted images are square.
