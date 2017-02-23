@@ -1,9 +1,6 @@
 #include <string>
 #include <cmath>
 
-//todo remove this
-#include <iostream>
-
 #include "ReadImage.cpp"
 #include "WriteImage.cpp"
 
@@ -30,42 +27,27 @@ void generateGaussianPyramid(string pathToImage, int initialSigma, int numberOfL
   int parentIndex, maskIndex;
   string outputFilePath;
 
-  cout << "about to read in the image" << endl;
-  cout << "image path: " << pathToImage << endl;
-  cout << "dataIn: " << dataIn << endl;
-
   // read image in
-//  ReadImage(pathToImage.c_str(), dataIn, numRows, numColumns, maxGreyValue);
-
   ReadImage(pathToImage.c_str(), dataIn, numRows, numColumns, maxGreyValue);
-
-  cout << "about to allocate space for dataOutSizes" << endl;
 
   // allocate dataOutSizes with numberOfBins rows (one row for each level / intermediate level)
   // and with 2 columns (for storing x,y dimensions of each level)
-  allocate2DArrays(dataOutSizes, numberOfBins, 2);
-
-  cout << "about to generate the mask sizes" << endl;
+  allocate2DArrays(dataOutSizes, 2, numberOfBins);
 
   // generate the mask sizes that will be used
   generateMaskSizes(maskSizes, initialSigma, numberOfIntermediates);
-
-  cout << "about to store dimensions of zero-th level" << endl;
 
   // store the dimensions of the zero-th level in dataOutSizes
   dataOutSizes[0][0] = numRows;
   dataOutSizes[0][1] = numColumns;
 
-  cout << "about to store zero-th level in dataOut" << endl;
-
   // store the zero-th level in dataOut
   dataOut[0] = *(dataIn);
-
-  cout << "about to look through and create each level / intermediate level" << endl;
 
   // loop once for each level (octave) in the pyramid
   for(int i = 1; i < numberOfBins; i++)
   {
+
     // generate indexes (I derived these algorithms on paper)
     parentIndex = 3 * ( (i - 1) / 3 );
     maskIndex = i - parentIndex - 1;
@@ -76,15 +58,11 @@ void generateGaussianPyramid(string pathToImage, int initialSigma, int numberOfL
 
   }
 
-  cout << "about to normalize" << endl;
-
   // normalize (this may not be required?)
   for(int i = 0; i < numberOfBins; i++)
   {
-    performNormalization(dataOut[i], dataOutSizes[i][0], dataOutSizes[i][1], maxGreyValue);
+//    performNormalization(dataOut[i], dataOutSizes[i][0], dataOutSizes[i][1], maxGreyValue);
   }
-
-  cout << "about to write images to file" << endl;
 
   // write output images
   for(int i = 0; i < numberOfBins; i++)
@@ -118,7 +96,8 @@ void allocate2DArrays(int** &array, int rows, int columns)
 void generateMaskSizes(int* maskSizes, int initialSigma, int numberOfIntermediateLevels)
 {
   // variables
-  float k = pow( 2, 1 / numberOfIntermediateLevels);
+  float k = pow( 2.0, 1.0 / numberOfIntermediateLevels);
+  int maskSize = (int) ceil( k * numberOfIntermediateLevels);
 
   // store initialSigma as the last maskSize at maskSizes[numberOfIntermediateLevels]
   maskSizes[numberOfIntermediateLevels] = initialSigma;
@@ -127,7 +106,7 @@ void generateMaskSizes(int* maskSizes, int initialSigma, int numberOfIntermediat
   for(int i = 0; i < numberOfIntermediateLevels; i++ )
   {
     // maskSizes[i] = int(k) * (i + 1)
-    maskSizes[i] = int(k) * (i + 1);
+    maskSizes[i] = maskSize * (i + 1);
   }
 
 
@@ -166,9 +145,9 @@ void generateNextLevel(int** dataIn, int** &dataOut, int& numRows, int& numColum
 
       // generate start and end indexes
       startIndexX = x;
-      endIndexX = x + maskSize - 1;
+      endIndexX = x + maskSize;
       startIndexY = y;
-      endIndexY = y + maskSize - 1;
+      endIndexY = y + maskSize;
 
       // set sum to 0
       sum = 0;
@@ -189,8 +168,11 @@ void generateNextLevel(int** dataIn, int** &dataOut, int& numRows, int& numColum
         }
       }
 
+      // scale down the sum
+      sum /= maskSize * maskSize;
+
       // set dataOut[startIndex/2][startIndex/2] = sum
-      dataOut[startIndexY / 2][startIndexX / 2] = sum;
+      dataOut[startIndexY / int(maskSize)][startIndexX / int(maskSize)] = sum;
     }
   }
 
@@ -203,9 +185,26 @@ void generateNextLevel(int** dataIn, int** &dataOut, int& numRows, int& numColum
  */
 void performNormalization(int** dataOut, int& numRows, int& numColumns, int& maxGreyValue)
 {
-  int minimumValue = 0;
-  int denominator = maxGreyValue - minimumValue;
+//  int denominator = maxGreyValue - minimumValue;
   int value;
+  int maximumValue = maxGreyValue, minimumValue = maxGreyValue;
+  double range = maximumValue - minimumValue;
+
+  // loop through all pixels, finding lowest and highest value
+  for(int x = 0; x < numRows; x++)
+  {
+    for(int y = 0; y < numColumns; y++)
+    {
+
+      if( dataOut[y][x] > maximumValue)
+        maximumValue = dataOut[y][x];
+
+      if( dataOut[y][x] < minimumValue && dataOut[y][x] >= 0)
+        minimumValue = dataOut[y][x];
+      value = dataOut[y][x];
+
+    }
+  }
 
   // loop through all pixels
   for(int x = 0; x < numRows; x++)
@@ -216,15 +215,11 @@ void performNormalization(int** dataOut, int& numRows, int& numColumns, int& max
       value = dataOut[y][x];
 
       // apply mathematical transformation to each pixel value
-      dataOut[y][x] = (value - minimumValue) / denominator;
+      dataOut[y][x] = ( (value - minimumValue) * (maximumValue - 0) / range ) + 0;
 
-      // check if data[y][x] is less than 0, and if it is set it to 0
-      if( dataOut[y][x] < 0 )
-      {
-        dataOut[y][x] = 0;
-      }
     }
   }
+
 }
 
 
@@ -235,8 +230,9 @@ string buildOutputFilename(string& filepath, int index, int& numLevels, int& num
 {
   string outputString = "";
   int i = 0;
+  int strlength = filepath.length();
   int level = index / numLevels;
-  int intermediate = index / numIntermediateLevels;
+  int intermediate = index % (numIntermediateLevels + 1);
 
   // copy the entire string until a "." is reached
   while( filepath[i] != '.')
