@@ -48,7 +48,7 @@ namespace Gauss_2D_2Mask {
     performHorizontalSmoothing( (*dataIn), dataIntermediate, numRows, numColumns, maskSize, mask);
 
     // perform vertical smoothing across the data
-    performHorizontalSmoothing( dataIntermediate, dataOut, numRows, numColumns, maskSize, mask);
+    performVerticalSmoothing( dataIntermediate, dataOut, numRows, numColumns, maskSize, mask);
 
     // normalize the data
 //  performNormalization(dataOut, numRows, numColumns, maxGreyValue);
