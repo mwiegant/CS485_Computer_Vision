@@ -25,7 +25,7 @@ void displayEdgeDetectionMenu()
   cin >> threshold;
 
   // run the Sobel edge detection, with inputs
-  performSobelEdgeDetection(pathToImage, threshold );
+  Sobel_E_D::performSobelEdgeDetection(pathToImage, threshold );
 
   cout << "Completed the Sobel edge detection operation." << endl;
 }
