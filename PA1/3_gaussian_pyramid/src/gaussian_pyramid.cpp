@@ -13,7 +13,8 @@ using namespace std;
 void allocate2DArrays(int** &array, int rows, int columns);
 void generateMaskSizes(int* maskSizes, int initialSigma, int numberOfIntermediateLevels);
 void generateNextLevel(int** dataIn, int** &dataOut, int& numRows, int& numColumns, int* dataOutSize, double maskSize);
-
+void performNormalization(int** dataOut, int& numRows, int& numColumns, int& maxGreyValue);
+string buildOutputFilename(string& filepath, int index, int& numLevels, int& numIntermediateLevels);
 
 
 void generateGaussianPyramid(string pathToImage, int initialSigma, int numberOfLevels, int numberOfIntermediates)
@@ -27,6 +28,7 @@ void generateGaussianPyramid(string pathToImage, int initialSigma, int numberOfL
   int* maskSizes = new int[numberOfMasks];
   int numRows, numColumns, maxGreyValue;
   int parentIndex, maskIndex;
+  string outputFilePath;
 
   cout << "about to read in the image" << endl;
   cout << "image path: " << pathToImage << endl;
@@ -74,11 +76,23 @@ void generateGaussianPyramid(string pathToImage, int initialSigma, int numberOfL
 
   }
 
+  cout << "about to normalize" << endl;
+
+  // normalize (this may not be required?)
+  for(int i = 0; i < numberOfBins; i++)
+  {
+    performNormalization(dataOut[i], dataOutSizes[i][0], dataOutSizes[i][1], maxGreyValue);
+  }
 
   cout << "about to write images to file" << endl;
 
   // write output images
+  for(int i = 0; i < numberOfBins; i++)
+  {
+    outputFilePath = buildOutputFilename(pathToImage, i, numberOfLevels, numberOfIntermediates);
 
+    WriteImage(outputFilePath.c_str(), dataOut[i], dataOutSizes[i][1], dataOutSizes[i][0], maxGreyValue);
+  }
 }
 
 
@@ -183,7 +197,71 @@ void generateNextLevel(int** dataIn, int** &dataOut, int& numRows, int& numColum
 }
 
 
+/*
+ * Performs normalization across the data that will be written to file. This ensures that
+ * every pixel value falls in the acceptable range.
+ */
+void performNormalization(int** dataOut, int& numRows, int& numColumns, int& maxGreyValue)
+{
+  int minimumValue = 0;
+  int denominator = maxGreyValue - minimumValue;
+  int value;
 
+  // loop through all pixels
+  for(int x = 0; x < numRows; x++)
+  {
+    for(int y = 0; y < numColumns; y++)
+    {
+
+      value = dataOut[y][x];
+
+      // apply mathematical transformation to each pixel value
+      dataOut[y][x] = (value - minimumValue) / denominator;
+
+      // check if data[y][x] is less than 0, and if it is set it to 0
+      if( dataOut[y][x] < 0 )
+      {
+        dataOut[y][x] = 0;
+      }
+    }
+  }
+}
+
+
+/*
+ * Builds the output filename.
+ */
+string buildOutputFilename(string& filepath, int index, int& numLevels, int& numIntermediateLevels)
+{
+  string outputString = "";
+  int i = 0;
+  int level = index / numLevels;
+  int intermediate = index / numIntermediateLevels;
+
+  // copy the entire string until a "." is reached
+  while( filepath[i] != '.')
+  {
+    outputString += filepath[i];
+    i++;
+  }
+
+  // append level to output file string
+  outputString += "_level=" + to_string(level);
+
+  // intermediate level to output file string if > than 0
+  if( intermediate > 0)
+  {
+    outputString += "_intermediate=" + to_string(intermediate);
+  }
+
+  // finish copying filepath into the output string
+  for(i; i < strlength; i++)
+  {
+    outputString += filepath[i];
+  }
+
+  return outputString;
+}
 
 
 
