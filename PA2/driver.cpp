@@ -1,18 +1,16 @@
 #include <iostream>
 #include <string>
 
+#include "src/normalization.cpp"
+
 using namespace std;
-
-const int NUM_POIS = 4; // number of Points of Interests
-
-/* function prototypes */
-void processImage(string filepath, int numPOIs, int POICoordinates[]);
-
 
 int main()
 {
   string filepath;
-  int *POICoordinates = new int[2 * NUM_POIS];
+  // 4 coordinates, each with an (x,y) means I need an array of size 8
+  int *POICoordinates = new int[8];
+  int normImageSizeX, normImageSizeY;
   int counter = 0;
 
   cout << endl;
@@ -21,12 +19,12 @@ int main()
   cout << "    ########################" << endl;
   cout << endl;
 
+  cout << "This program assumes you will use 4 PoIs (Points of Interest)." << endl;
   cout << "Please enter the path to your image: ";
   cin >> filepath;
 
-  cout << "Please enter the PoI (Point of Interest) coordinates." << endl;
-
-  for(int i = 1; i <= NUM_POIS; i++)
+  // obtain PoI locations
+  for(int i = 1; i < 5; i++)
   {
     cout << "PoI " << i << " X : ";
     cin >> POICoordinates[counter];
@@ -37,9 +35,18 @@ int main()
     counter++;
   }
 
+  // obtain normalized image size dimensions
+  cout << "Please enter the desired size of your normalized image." << endl;
+  cout << "NOTE: the normalized image dimensions must be less than the original image." << endl;
+  cout << "X: ";
+  cin >> normImageSizeX;
+  cout << "Y: ";
+  cin >> normImageSizeY;
+  cout << endl;
+
   cout << "Normalizing the image..." << endl;
 
-  processImage(filepath, NUM_POIS, POICoordinates);
+  performNormalization(filepath, POICoordinates, normImageSizeX, normImageSizeY);
 
   cout << "Successfully completed image normalization." << endl;
 
@@ -47,9 +54,5 @@ int main()
 }
 
 
-void processImage(string filepath, int numPOIs, int POICoordinates[])
-{
-
-}
 
 
