@@ -1,5 +1,5 @@
-#ifndef MAX_IO
-#define MAX_IO
+#ifndef MAX_FILE_IO
+#define MAX_FILE_IO
 
 #include <iostream>
 #include <fstream>
@@ -17,7 +17,7 @@ using namespace std;
  * @param N - the height of the image
  * @param Q - the maximum grey value of the image
  */
-void ReadImage(const char* fname, int ***fimage, int& M, int& N, int& Q)
+void ReadPGMImage(const char* fname, int ***fimage, int& M, int& N, int& Q)
 {
   int i, j;
   unsigned char *image;
@@ -86,7 +86,7 @@ void ReadImage(const char* fname, int ***fimage, int& M, int& N, int& Q)
  * @param N - the height of the image
  * @param Q - the maximum grey value supported by the image
  */
-void WriteImage(const char* fname, int **fimage, int M, int N, int Q)
+void WritePGMImage(const char* fname, int **fimage, int M, int N, int Q)
 {
   int i, j;
   unsigned char *image;

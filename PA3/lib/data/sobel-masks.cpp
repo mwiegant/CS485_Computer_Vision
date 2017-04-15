@@ -1,5 +1,5 @@
-#ifndef SOBEL_MASKS
-#define SOBEL_MASKS
+#ifndef MAX_DATA_SOBEL_MASKS
+#define MAX_DATA_SOBEL_MASKS
 
 /*
  * Given a mask variable, populates the mask with the values
@@ -72,4 +72,4 @@ void getSobelMask_Y(int** &mask)
 }
 
 
-#endif //SOBEL_MASKS
+#endif // MAX_DATA_SOBEL_MASKS

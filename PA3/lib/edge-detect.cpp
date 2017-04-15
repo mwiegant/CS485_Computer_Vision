@@ -1,13 +1,16 @@
+#ifndef MAX_EDGE_DETECT
+#define MAX_EDGE_DETECT
+
 #include <string>
 #include <cmath>
 
 /* my code */
-#include "pgm-file-io.cpp"
+#include "file-io.cpp"
 #include "data/sobel-masks.cpp"
 
 using namespace std;
 
-namespace maxSobel {
+namespace maxEdgeDetect {
 
     const int ED_DEBUG = false;
 
@@ -284,4 +287,4 @@ namespace maxSobel {
     }
 
 }
-
+#endif
