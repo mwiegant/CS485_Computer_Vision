@@ -10,30 +10,28 @@ using namespace maxSobel;
 int main(int argc, char** argv)
 {
   // var init
-  string fileOut = "images/output.pgm";
-  int numRows, numColumns, maxGreyValue;
+  string fileOut;
+  int numRows, numColumns, maxGreyValue, threshold;
   int **dataIn;
   int **dataOut;
-  int threshold = 40;
 
-  if(argc != 2) {
-    cout << "ERROR - must provide image filepath as second argument." << endl;
+  if(argc != 3) {
+    cout << "ERROR - expected: <./pa3> <filepath> <threshold>" << endl;
     return -1;
   }
 
-  cout << "DEBUG - about to read in image from file." << endl;
-
   // read data from file
   ReadImage(argv[1], &dataIn, numRows, numColumns, maxGreyValue);
-
-  cout << "DEBUG - read image from file." << endl;
+  threshold = atoi(argv[2]);
 
   // apply edge detection
   performSobelEdgeDetection(&dataIn, numRows, numColumns, maxGreyValue, threshold, &dataOut);
 
-  cout << "DEBUG - about to write data to file." << endl;
+  // apply hough transform
+    //todo
 
-  // write image to file, to prove this even works
+  // write image to file
+  fileOut = "images/threshold=" + to_string(threshold) + "_output.pgm";
   WriteImage(fileOut.c_str(), dataOut, numRows, numColumns, maxGreyValue);
 
   cout << "INFO - Successfully completed program." << endl;

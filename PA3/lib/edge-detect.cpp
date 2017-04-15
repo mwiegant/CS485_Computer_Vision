@@ -9,6 +9,8 @@ using namespace std;
 
 namespace maxSobel {
 
+    const int ED_DEBUG = false;
+
     /* function prototypes */
     void allocate2DArrays(int** &array, int& rows, int& columns);
     void applySobelMask(int** dataIn, int** dataOut, int& numRows, int& numColumns, int** gradientMask);
@@ -50,7 +52,7 @@ namespace maxSobel {
       getSobelMask_X(gradientX);
       getSobelMask_Y(gradientY);
 
-      cout << "DEBUG - obtained sobel mask gradients." << endl;
+      if(ED_DEBUG) cout << "DEBUG - obtained sobel mask gradients." << endl;
 
       // allocate space for intermediate and final data pointer arrays
       allocate2DArrays(dataGradientX, numRows, numColumns);
@@ -58,23 +60,23 @@ namespace maxSobel {
       allocate2DArrays(dataGradientMagnitude, numRows, numColumns);
       allocate2DArrays((*dataOut), numRows, numColumns);
 
-      cout << "DEBUG - allocated space for all arrays." << endl;
+      if(ED_DEBUG) cout << "DEBUG - allocated space for all arrays." << endl;
 
       // apply mask Ix and mask Iy to the image
       applySobelMask( (*dataIn), dataGradientX, numRows, numColumns, gradientX);
       applySobelMask( (*dataIn), dataGradientY, numRows, numColumns, gradientY);
 
-      cout << "DEBUG - applied sobel mask to generate gradients." << endl;
+      if(ED_DEBUG) cout << "DEBUG - applied sobel mask to generate gradients." << endl;
 
       // apply the gradient magnitude M(x,y) to the image
       applyGradientMagnitude(dataGradientX, dataGradientY, dataGradientMagnitude, numRows, numColumns);
 
-      cout << "DEBUG - generated the gradient magnitude." << endl;
+      if(ED_DEBUG) cout << "DEBUG - generated the gradient magnitude." << endl;
 
       // apply thresholding to get the final image
       applyThreshold(dataGradientMagnitude, (*dataOut), threshold, numRows, numColumns, maxGreyValue);
 
-      cout << "DEBUG - applied threshold; generated output of edge detection func." << endl;
+      if(ED_DEBUG) cout << "DEBUG - applied threshold; generated output of edge detection func." << endl;
 
       // perform normalizations
 //  performNormalization(dataGradientX, numRows, numColumns, maxGreyValue);
