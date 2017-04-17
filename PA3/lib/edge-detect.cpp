@@ -82,8 +82,8 @@ namespace maxEdgeDetect {
       if(ED_DEBUG) cout << "DEBUG - applied threshold; generated output of edge detection func." << endl;
 
       // optimization, set edges of dataset to 0, so they are not detected as edges
-      for(int x = 0; x < numRows; x++) {
-        for(int y = 0; y < numColumns; y++) {
+      for(int y = 0; y < numColumns; y++) {
+        for(int x = 0; x < numRows; x++) {
           if( (x == 0) || (y == 0) || (x+1 == numRows) || (y+1 == numColumns) )
             (*dataOut)[y][x] = 0;
         }
@@ -128,11 +128,9 @@ namespace maxEdgeDetect {
       float sum;
 
       // loop through all the data in dataIn
-      for(currentX = 0; currentX < numRows; currentX++)
-      {
+      for(currentY = 0; currentY < numColumns; currentY++) {
+        for(currentX = 0; currentX < numRows; currentX++) {
 
-        for(currentY = 0; currentY < numColumns; currentY++)
-        {
           // generate the start and end indices
           // the +1 / -1 is done because Sobel Masks are 3x3 masks
           startIndexX = currentX - 1;
@@ -179,10 +177,9 @@ namespace maxEdgeDetect {
       int magnitude;
 
       // loop through every pixel
-      for(int x = 0; x < numRows; x++)
-      {
-        for(int y = 0; y < numColumns; y++)
-        {
+      for(int y = 0; y < numColumns; y++) {
+        for(int x = 0; x < numRows; x++) {
+
           // compute: magnitude = sqrt( (dataGradientX[y][x] ^ 2) + (dataGradientY[y][x] ^ 2) )
           magnitude = sqrt( pow(dataGradientX[y][x], 2) + pow(dataGradientY[y][x], 2) );
 
@@ -207,10 +204,8 @@ namespace maxEdgeDetect {
     {
 
       // loop through all pixels
-      for(int x = 0; x < numRows; x++)
-      {
-        for(int y = 0; y < numColumns; y++)
-        {
+      for(int y = 0; y < numColumns; y++) {
+        for(int x = 0; x < numRows; x++) {
 
           // check if dataIn[y][x] is >= threshold
           if( dataIn[y][x] >= threshold)
