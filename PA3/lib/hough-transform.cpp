@@ -10,7 +10,7 @@ using namespace std;
 
 namespace maxHoughTransform {
 
-  const int HT_DEBUG = false;
+  const int HT_DEBUG = true;
 
   /* structures */
   struct Circle {
@@ -35,9 +35,11 @@ namespace maxHoughTransform {
     int yMid = yRange / 2;
     int xMid = xRange / 2;
     int maxVotes = 1;
+    int horizontalThinningIterations = 1;
+    int verticalThinningIterations = 1;
     int a, b;
     int rI, yI, xI;
-    float percentOfMaximum = 0.5;
+    double percentOfMaximum = 0.65;
     int cutoff;
     float rads;
     vector<Circle> circles;
@@ -63,8 +65,7 @@ namespace maxHoughTransform {
     }
 
     if(HT_DEBUG) cout << "DEBUG - finished filling accumulator array with 0s" << endl;
-    if(HT_DEBUG) cout << "DEBUG - radiusRange: 0 to " << radiusRange << ", yRange: 0 to " << yRange
-         << ", xRange: 0 to " << xRange << endl;
+    if(HT_DEBUG) cout << "DEBUG - radiusRange: 0 to " << radiusRange << ", yRange: 0 to " << yRange << ", xRange: 0 to " << xRange << endl;
 
     // do voting in parameter space
     // iterate over every [y][x] inside dataIn
@@ -73,8 +74,6 @@ namespace maxHoughTransform {
 
         // only do voting if the (x,y) location corresponds to an edgepoint
         if(dataIn[y][x] == maxGreyValue) {
-
-//          cout << "DEBUG - performing voting for dataIn[" << y << "][" << x << "]." << endl;
 
           // iterate over every possible theta for every possible radius length
           for(int r = minRadius; r <= maxRadius; r++) {
@@ -89,8 +88,6 @@ namespace maxHoughTransform {
               // transform (a,b) from "2D-graph" space to "array" space
               yI = (b < yMid) ? b : b + yMid;
               xI = (a < xMid) ? a : a + xMid;
-
-//              cout << "DEBUG - rI: " << rI << ", yI: " << yI << ", xI: " << xI << endl;
 
               // error checking for out of range votes
               if( xI >= 0 && xI < xRange && yI >= 0 && yI < yRange ) {
@@ -126,11 +123,32 @@ namespace maxHoughTransform {
     // perform initial voting
     circles = doVoting(accumulator, minRadius, radiusRange, xRange, yRange, cutoff);
 
-    // thin out regions of cells with passing votes
+    if(HT_DEBUG) cout << "DEBUG: cutoff: " << cutoff << endl;
+    if(HT_DEBUG) cout << "DEBUG: before thinning, found " << circles.size() << " circles." << endl;
+
+    // do horizontal thinning on each radius level
+    while(horizontalThinningIterations > 0) {
+      for(int r = 0; r < radiusRange; r++) {
+        doHorizontalThinning(&accumulator[r], xRange, yRange, cutoff);
+      }
+      horizontalThinningIterations--;
+
+      // DEBUG - perform voting again so I can see impact of horizontal thinning
+      circles = doVoting(accumulator, minRadius, radiusRange, xRange, yRange, cutoff);
+      if(HT_DEBUG) cout << "DEBUG: after horizontal thinning, found " << circles.size() << " circles." << endl;
+    }
 
 
-      // todo - perform horizontal and vertical thinning, do each a number of times depending on
-      // todo - how many circles were initially found compared to the size of the 3D-array space
+    // do vertical thinning
+    while(verticalThinningIterations > 0) {
+      doVerticalThinning(&accumulator, radiusRange, xRange, yRange, cutoff);
+
+      verticalThinningIterations--;
+
+      // DEBUG - perform voting again so I can see impact of vertical thinning
+      circles = doVoting(accumulator, minRadius, radiusRange, xRange, yRange, cutoff);
+      if(HT_DEBUG) cout << "DEBUG: after vertical thinning, found " << circles.size() << " circles." << endl;
+    }
 
 
     // perform final voting
@@ -173,57 +191,83 @@ namespace maxHoughTransform {
   void doHorizontalThinning(int ***data2D, int xRange, int yRange, int cutoff)
   {
     // var initialization
-    int voteAdjustmentPerNeighbor = 0.25;
+    double staticPercentageRetained = 0.00;
+    double voteAdjustmentPerNeighbor = 0.10;
     int passingNeighbors;
+
+    // DEBUG
+    int cellsAdjusted = 0;
 
     for(int y = 0; y < yRange; y++) {
       for(int x = 0; x < xRange; x++) {
 
-        passingNeighbors = 0;
+        if( (*data2D)[y][x] > cutoff) {
+          passingNeighbors = 0;
 
-        // check each neighbor cell, tally how many neighbor cells
-        // contain more votes than the cutoff number of votes
+          // check each neighbor cell, tally how many neighbor cells
+          // contain more votes than the cutoff number of votes
 
-        // neighbor above
-        if( y - 1 > 0 ) {
-          if( (*data2D)[y-1][x] > cutoff)
-            passingNeighbors++;
+          // neighbor above
+          if( y - 1 > 0 ) {
+            if( (*data2D)[y-1][x] > cutoff)
+              passingNeighbors++;
+          }
+
+          // neighbor below
+          if( y + 1 < yRange ) {
+            if( (*data2D)[y+1][x] > cutoff)
+              passingNeighbors++;
+          }
+
+          // neighbor to the left
+          if( x - 1 > 0 ) {
+            if( (*data2D)[y][x-1] > cutoff)
+              passingNeighbors++;
+          }
+
+          // neighbor to the right
+          if( x + 1 > 0 ) {
+            if( (*data2D)[y][x+1] > cutoff)
+              passingNeighbors++;
+          }
+
+          // only adjust the number of votes for cells that are not isolated,
+          // meaning none of their neighbors are "passing"
+          if(passingNeighbors > 0) {
+
+//            cout << "DEBUG - passingNeighbors: " << passingNeighbors << endl;
+//            cout << "number of votes at [" << y << "][" << x << "] before thinning: " << (*data2D)[y][x] << endl;
+
+            // adjust the number of votes for the cell at (x,y) based on how
+            // many of its neighbors also had passing votes
+            // (the goal is to eliminate cells without many "passing" neighbors)
+            // ex:              (           .20           + (           0.20          *        3        )  => 0.80
+            (*data2D)[y][x] *= ( staticPercentageRetained + (voteAdjustmentPerNeighbor * passingNeighbors) );
+
+//            cout << "number of votes at [" << y << "][" << x << "] after thinning: " << (*data2D)[y][x] << endl;
+
+            // DEBUG
+            cellsAdjusted++;
+          }
+
+
+
+
         }
 
-        // neighbor below
-        if( y + 1 < yRange ) {
-          if( (*data2D)[y+1][x] > cutoff)
-            passingNeighbors++;
-        }
-
-        // neighbor to the left
-        if( x - 1 > 0 ) {
-          if( (*data2D)[y][x-1] > cutoff)
-            passingNeighbors++;
-        }
-
-        // neighbor to the right
-        if( x + 1 > 0 ) {
-          if( (*data2D)[y][x+1] > cutoff)
-            passingNeighbors++;
-        }
-
-
-        // adjust the number of votes for the cell at (x,y) based on how
-        // many of its neighbors also had passing votes
-        // (the goal is to eliminate cells without many "passing" neighbors)
-        // ex:              (           0.25          *        3        )  => 0.75
-        (*data2D)[y][x] *= (voteAdjustmentPerNeighbor * passingNeighbors);
       }
     }
+
+    // DEBUG
+//    cout << "cells adjusted by thinning: " << cellsAdjusted << endl;
   }
 
 
   void doVerticalThinning(int ****data3D, int radiusRange, int xRange, int yRange, int cutoff)
   {
     // var initialization
-    int staticPercentageRetained = 0.7;
-    int voteAdjustmentPerNeighbor = 0.15;
+    double staticPercentageRetained = 0.5;
+    double voteAdjustmentPerNeighbor = 0.25;
     int passingNeighbors;
 
 
@@ -231,30 +275,41 @@ namespace maxHoughTransform {
       for (int y = 0; y < yRange; y++) {
         for (int x = 0; x < xRange; x++) {
 
-          passingNeighbors = 0;
+          if( (*data3D)[r][y][x] > cutoff) {
+            passingNeighbors = 0;
 
-          // check the (x,y) cell with a radius one greater and one less
-          // than this cell and count if either of those two cells contain
-          // more votes than the cutoff number of votes
+            // check the (x,y) cell with a radius one greater and one less
+            // than this cell and count if either of those two cells contain
+            // more votes than the cutoff number of votes
 
-          // neighbor "above"
-          if( r + 1 < radiusRange ) {
-            if( (*data3D)[r+1][y][x] > cutoff)
-              passingNeighbors++;
+            // neighbor "above"
+            if( r + 1 < radiusRange ) {
+              if( (*data3D)[r+1][y][x] > cutoff)
+                passingNeighbors++;
+            }
+
+            // neighbor "below"
+            if( r - 1 >= 0 ) {
+              if( (*data3D)[r-1][y][x] > cutoff)
+                passingNeighbors++;
+            }
+
+            // only adjust votes on cells that have at least one neighbor
+            if(passingNeighbors > 0) {
+
+//              cout << "number of votes at [" << r << "][" << y << "][" << x << "] before thinning: " << (*data3D)[r][y][x] << endl;
+
+
+              // adjust the number of votes for the cell at (x,y) based on how
+              // many of its neighbors also had passing votes
+              // (the goal is to eliminate cells without many "passing" neighbors)
+              // ex:                (            0.70          + (           0.15          *        1        )  => 0.85
+              (*data3D)[r][y][x] *= ( staticPercentageRetained + (voteAdjustmentPerNeighbor * passingNeighbors) );
+
+//              cout << "number of votes at [" << r << "][" << y << "][" << x << "] after thinning: " << (*data3D)[r][y][x] << endl;
+            }
           }
 
-          // neighbor "below"
-          if( r - 1 > 0 ) {
-            if( (*data3D)[r-1][y][x] > cutoff)
-              passingNeighbors++;
-          }
-
-
-          // adjust the number of votes for the cell at (x,y) based on how
-          // many of its neighbors also had passing votes
-          // (the goal is to eliminate cells without many "passing" neighbors)
-          // ex:                (            0.70          + (           0.15          *        1        )  => 0.85
-          (*data3D)[r][y][x] *= ( staticPercentageRetained + (voteAdjustmentPerNeighbor * passingNeighbors) );
         }
       }
     }
