@@ -12,7 +12,7 @@ using namespace std;
 
 namespace maxEdgeDetect {
 
-    const int ED_DEBUG = false;
+    const int ED_DEBUG = true;
 
     /* function prototypes */
     void allocate2DArrays(int** &array, int& rows, int& columns);
@@ -80,6 +80,16 @@ namespace maxEdgeDetect {
       applyThreshold(dataGradientMagnitude, (*dataOut), threshold, numRows, numColumns, maxGreyValue);
 
       if(ED_DEBUG) cout << "DEBUG - applied threshold; generated output of edge detection func." << endl;
+
+      // optimization, set edges of dataset to 0, so they are not detected as edges
+      for(int x = 0; x < numRows; x++) {
+        for(int y = 0; y < numColumns; y++) {
+          if( (x == 0) || (y == 0) || (x+1 == numRows) || (y+1 == numColumns) )
+            (*dataOut)[y][x] = 0;
+        }
+      }
+
+      if(ED_DEBUG) cout << "DEBUG - removed detected edges from edges of dataset." << endl;
 
       // perform normalizations
 //  performNormalization(dataGradientX, numRows, numColumns, maxGreyValue);
