@@ -110,7 +110,7 @@ namespace maxHoughTransform {
 
           // relative thresholding
           if (accumulator[x][y][r] > cutoff) {
-            circle.x = x; circle.y = y; circle.r = r;
+            circle.x = x; circle.y = y; circle.r = r + minRadius;
             circles.push_back(circle);
           }
         }
