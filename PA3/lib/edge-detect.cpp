@@ -91,11 +91,6 @@ namespace maxEdgeDetect {
 
       if(ED_DEBUG) cout << "DEBUG - removed detected edges from edges of dataset." << endl;
 
-      // perform normalizations
-//  performNormalization(dataGradientX, numRows, numColumns, maxGreyValue);
-//  performNormalization(dataGradientY, numRows, numColumns, maxGreyValue);
-//  performNormalization(dataGradientMagnitude, numRows, numColumns, maxGreyValue);
-//  performNormalization(dataOut, numRows, numColumns, maxGreyValue);
     }
 
 
