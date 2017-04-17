@@ -3,8 +3,6 @@
 
 #include <cmath>
 
-// todo - add this file to main.cpp  (when I get there)
-
 
 namespace maxDraw {
   #define PI 3.14159
