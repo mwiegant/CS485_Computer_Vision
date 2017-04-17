@@ -16,9 +16,9 @@ int main(int argc, char** argv)
   // var init
   string fileOut;
   int numRows, numColumns, maxGreyValue, threshold, minRadius, maxRadius;
-  int **dataIn;
-  int **dataOut;
-  int **dataWithCircles;
+  int **fileImageData;
+  int **thresholdedData;
+  int **circleImageData;
   vector<Circle> circles;
 
   // check for correct amount of command line arguments
@@ -28,44 +28,50 @@ int main(int argc, char** argv)
   }
 
   // read data from file
-  ReadPGMImage(argv[1], &dataIn, numRows, numColumns, maxGreyValue);
+  ReadPGMImage(argv[1], &fileImageData, numRows, numColumns, maxGreyValue);
 
   // grab command line arguments
   threshold = atoi(argv[2]);
   minRadius = atoi(argv[3]);
   maxRadius = atoi(argv[4]);
 
+  cout << "threshold: " << threshold << endl;
+  cout << "minRadius: " << minRadius << endl;
+  cout << "maxRadius: " << maxRadius << endl;
+  cout << "DEBUG - STARTING -- SOBEL EDGE DETECTION." << endl << endl;
+
   // apply edge detection
-  performSobelEdgeDetection(&dataIn, numRows, numColumns, maxGreyValue, threshold, &dataOut);
+  performSobelEdgeDetection(&fileImageData, numRows, numColumns, maxGreyValue, threshold, &thresholdedData);
+
+  cout << "DEBUG - STARTING -- HOUGH TRANSFORM." << endl << endl;
 
   // apply hough transform
-  circles = houghTransform(dataIn, numRows, numColumns, minRadius, maxRadius);
+  circles = houghTransform(thresholdedData, numRows, numColumns, maxGreyValue, minRadius, maxRadius);
 
   // DEBUG - print circle data
   cout << "DEBUG - found " << circles.size() << " circles." << endl;
-  string text;
-  for(int i = 0; i < circles.size(); i++) {
-    text = "Circle......... x: " + to_string(circles[i].x) + ", y: " + to_string(circles[i].y) + ", r: " + to_string(circles[i].r);
-    cout << text << endl;
-  }
+//  string text;
+//  for(int i = 0; i < circles.size(); i++) {
+//    text = "Circle......... x: " + to_string(circles[i].x) + ", y: " + to_string(circles[i].y) + ", r: " + to_string(circles[i].r);
+//    cout << text << endl;
+//  }
 
-  // draw detected circles onto the output image
-  // todo - draw all cicles, not just first 10
-  for(int i = 0; i < 10; i++) {
+  // draw detected circles onto an output image
+  for(int i = 0; i < circles.size(); i++) {
     if(i == 0) {
-      dataWithCircles = drawGreyscaleCircle(dataOut, numRows, numColumns, circles[i].x, circles[i].y, circles[i].r, 128);
+      circleImageData = drawGreyscaleCircle(thresholdedData, numRows, numColumns, circles[i].x, circles[i].y, circles[i].r, 128);
     } else {
-      dataWithCircles = drawGreyscaleCircle(dataWithCircles, numRows, numColumns, circles[i].x, circles[i].y, circles[i].r, 128);
+      circleImageData = drawGreyscaleCircle(circleImageData, numRows, numColumns, circles[i].x, circles[i].y, circles[i].r, 128);
     }
   }
 
   // write thresholded image to file
   fileOut = "images/threshold=" + to_string(threshold) + "_output.pgm";
-  WritePGMImage(fileOut.c_str(), dataOut, numRows, numColumns, maxGreyValue);
+  WritePGMImage(fileOut.c_str(), thresholdedData, numRows, numColumns, maxGreyValue);
 
   // write image with circles to file
   fileOut = "images/image_circles.pgm";
-  WritePGMImage(fileOut.c_str(), dataWithCircles, numRows, numColumns, maxGreyValue);
+  WritePGMImage(fileOut.c_str(), circleImageData, numRows, numColumns, maxGreyValue);
 
   cout << "INFO - Successfully completed program." << endl;
 
