@@ -12,7 +12,7 @@ using namespace std;
 
 namespace maxEdgeDetect {
 
-    const int ED_DEBUG = true;
+    const int ED_DEBUG = false;
 
     /* function prototypes */
     void allocate2DArrays(int** &array, int& rows, int& columns);
@@ -75,6 +75,11 @@ namespace maxEdgeDetect {
       applyGradientMagnitude(dataGradientX, dataGradientY, dataGradientMagnitude, numRows, numColumns);
 
       if(ED_DEBUG) cout << "DEBUG - generated the gradient magnitude." << endl;
+
+      // apply normalization
+      performNormalization(dataGradientMagnitude, numRows, numColumns, maxGreyValue);
+
+      if(ED_DEBUG) cout << "DEBUG - normalized all cells in the gradient magnitude." << endl;
 
       // apply thresholding to get the final image
       applyThreshold(dataGradientMagnitude, (*dataOut), threshold, numRows, numColumns, maxGreyValue);
@@ -225,20 +230,33 @@ namespace maxEdgeDetect {
  */
     void performNormalization(int** dataOut, int& numRows, int& numColumns, int& maxGreyValue)
     {
-      int minimumValue = 0;
-      int denominator = maxGreyValue - minimumValue;
+      float minimumValue = 0;
+      int maximumValue = 0;
+      int range;
       int value;
+      float difference;
+      int scalingFactor = maxGreyValue;
 
-      // loop through all pixels
-      for(int x = 0; x < numRows; x++)
-      {
-        for(int y = 0; y < numColumns; y++)
-        {
+      // loop through all pixels, find largest value
+      for(int y = 0; y < numColumns; y++) {
+        for (int x = 0; x < numRows; x++) {
+          if(dataOut[y][x] > maximumValue)
+            maximumValue = dataOut[y][x];
+        }
+      }
+
+      // calculate range
+      range = maximumValue - minimumValue;
+
+      // loop through all pixels, apply normalization
+      for(int y = 0; y < numColumns; y++) {
+        for(int x = 0; x < numRows; x++) {
 
           value = dataOut[y][x];
+          difference = value - minimumValue;
 
           // apply mathematical transformation to each pixel value
-          dataOut[y][x] = (value - minimumValue) / denominator;
+          dataOut[y][x] = int( scalingFactor * difference / range );
 
           // check if data[y][x] is less than 0, and if it is set it to 0
           if( dataOut[y][x] < 0 )
