@@ -13,10 +13,21 @@ namespace maxHoughTransform {
   const int HT_DEBUG = true;
 
   /* structures */
+  struct Node {
+    int x;
+    int y;
+    Node* next;
+  };
+
+  struct LinkedList {
+    int totalVotes;
+    Node* start;
+  };
+
   struct Circle {
-      int x;
-      int y;
-      int r;
+    int x;
+    int y;
+    int r;
   };
 
   /* function prototypes */
@@ -35,11 +46,11 @@ namespace maxHoughTransform {
     int yMid = yRange / 2;
     int xMid = xRange / 2;
     int maxVotes = 1;
-    int horizontalThinningIterations = 1;
+    int horizontalThinningIterations = 3;
     int verticalThinningIterations = 1;
     int a, b;
     int rI, yI, xI;
-    double percentOfMaximum = 0.65;
+    double percentOfMaximum = 0.75;
     int cutoff;
     float rads;
     vector<Circle> circles;
@@ -192,7 +203,7 @@ namespace maxHoughTransform {
   {
     // var initialization
     double staticPercentageRetained = 0.00;
-    double voteAdjustmentPerNeighbor = 0.10;
+    double voteAdjustmentPerNeighbor = 0.25;
     int passingNeighbors;
 
     // DEBUG
