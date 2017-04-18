@@ -54,6 +54,7 @@ int main(int argc, char** argv)
   string text;
   for(int i = 0; i < circles.size(); i++) {
     text = "Circle......... x: " + to_string(circles[i].x) + ", y: " + to_string(circles[i].y) + ", r: " + to_string(circles[i].r);
+    text += ", fittingError: " + to_string(circles[i].fittingError);
     cout << text << endl;
   }
 
@@ -80,12 +81,16 @@ int main(int argc, char** argv)
   WritePGMImage(fileOut.c_str(), thresholdedData, numRows, numColumns, maxGreyValue);
 
   // write image with circles superimposed to file
-  fileOut = "images/image_superimposed.pgm";
-  WritePGMImage(fileOut.c_str(), circleImageData, numRows, numColumns, maxGreyValue);
+  if(circles.size() > 0) {
+    fileOut = "images/image_superimposed.pgm";
+    WritePGMImage(fileOut.c_str(), circleImageData, numRows, numColumns, maxGreyValue);
+  }
 
   // write thresholded image with circles superimposed to file
-  fileOut = "images/image_threshold_superimposed.pgm";
-  WritePGMImage(fileOut.c_str(), circleImageThresholded, numRows, numColumns, maxGreyValue);
+  if(circles.size() > 0) {
+    fileOut = "images/image_threshold_superimposed.pgm";
+    WritePGMImage(fileOut.c_str(), circleImageThresholded, numRows, numColumns, maxGreyValue);
+  }
 
   cout << "INFO - Successfully completed program." << endl;
 
