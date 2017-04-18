@@ -55,7 +55,7 @@ namespace maxHoughTransform {
     int yMid = yRange / 2;
     int xMid = xRange / 2;
     int maxVotes = 1;
-    int horizontalThinningIterations = 3;
+    int horizontalThinningIterations = 1;
     int verticalThinningIterations = 1;
     int a, b;
     int rI, yI, xI;
@@ -348,7 +348,6 @@ namespace maxHoughTransform {
     int totalNodes;
 
     for(int c = 0; c < circles.size(); c++) {
-      cout << "DEBUG - checking circle " << c << endl;
 
       sum = 0;
       r = circles[c].r - minRadius;
