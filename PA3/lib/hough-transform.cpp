@@ -10,7 +10,7 @@ using namespace std;
 
 namespace maxHoughTransform {
 
-  const int HT_DEBUG = true;
+  const int HT_DEBUG = false;
 
   /* structures */
   struct Node {
@@ -189,9 +189,10 @@ namespace maxHoughTransform {
     // perform final voting
     circles = doVoting(accumulator, minRadius, radiusRange, xRange, yRange, cutoff);
 
+    cout << "DEBUG - accumulator[0][75][153].totalVotes: " << accumulator[0][75][153].totalVotes << endl;
 
     // calculate fitting error of circles
-//    calculateFittingErrors(accumulator, circles, minRadius);
+    calculateFittingErrors(accumulator, circles, minRadius);
 
 
     if(HT_DEBUG) cout << "DEBUG: completed hough transform." << endl;
@@ -354,14 +355,8 @@ namespace maxHoughTransform {
       yCenter = circles[c].y;
       xCenter = circles[c].x;
 
-      cout << "data from circle.....r: " << r << ", yCenter: " << yCenter << ", xCenter: " << xCenter << endl;
-      cout << "data3D[r][y][x].totalVotes: " << data3D[r][y][x].totalVotes << endl;
-      cout << "data3D[r][y][x].start: " << data3D[r][y][x].start << endl;
-
-      totalNodes = data3D[r][y][x].totalVotes;
-      node = data3D[r][y][x].start;
-
-      cout << "DEBUG - gathered all data." << endl;
+      totalNodes = data3D[r][yCenter][xCenter].totalVotes;
+      node = data3D[r][yCenter][xCenter].start;
 
       // calculate how far from the circle each point was that voted for that circle, and add those distances
       while(node != NULL) {
@@ -372,8 +367,6 @@ namespace maxHoughTransform {
         sum += abs( sqrt( xDiffSquared + yDiffSquared) - r );
         node = node->next;
       }
-
-      cout << "calculated sum, sum: " << sum << endl;
 
       // calculate the fitting error
       circles[c].fittingError = float( sum * 1.0 / totalNodes );

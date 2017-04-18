@@ -61,9 +61,9 @@ int main(int argc, char** argv)
   // draw detected circles over the image from file
   for(int i = 0; i < circles.size(); i++) {
     if(i == 0) {
-      circleImageData = drawGreyscaleCircle(fileImageData, numRows, numColumns, circles[i].x, circles[i].y, circles[i].r, 128);
+      circleImageData = drawGreyscaleCircle(fileImageData, numRows, numColumns, circles[i].x, circles[i].y, circles[i].r, 0);
     } else {
-      circleImageData = drawGreyscaleCircle(circleImageData, numRows, numColumns, circles[i].x, circles[i].y, circles[i].r, 128);
+      circleImageData = drawGreyscaleCircle(circleImageData, numRows, numColumns, circles[i].x, circles[i].y, circles[i].r, 0);
     }
   }
 
