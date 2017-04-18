@@ -189,8 +189,6 @@ namespace maxHoughTransform {
     // perform final voting
     circles = doVoting(accumulator, minRadius, radiusRange, xRange, yRange, cutoff);
 
-    cout << "DEBUG - accumulator[0][75][153].totalVotes: " << accumulator[0][75][153].totalVotes << endl;
-
     // calculate fitting error of circles
     calculateFittingErrors(accumulator, circles, minRadius);
 
