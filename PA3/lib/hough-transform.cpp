@@ -17,6 +17,10 @@ namespace maxHoughTransform {
     int x;
     int y;
     Node* next;
+    // constructor
+    Node(int _x, int _y, Node* _next) {
+      x = _x; y = _y; next = _next;
+    }
   };
 
   struct LinkedList {
@@ -28,18 +32,23 @@ namespace maxHoughTransform {
     int x;
     int y;
     int r;
+    float fittingError;
   };
 
   /* function prototypes */
-  vector<Circle> doVoting(int ***data3D, int minRadius, int radiusRange, int xRange, int yRange, int cutoff);
-  void doHorizontalThinning(int ***data2D, int xRange, int yRange, int cutoff);
-  void doVerticalThinning(int ****data3D, int radiusRange, int xRange, int yRange, int cutoff);
+  vector<Circle> doVoting(LinkedList ***data3D, int minRadius, int radiusRange, int xRange, int yRange, int cutoff);
+  /* both thinning functions want the 2D or 3D array passed by reference (hence *** for 2D and **** for 3D arrays */
+  void doHorizontalThinning(LinkedList ***data2D, int xRange, int yRange, int cutoff);
+  void doVerticalThinning(LinkedList ****data3D, int radiusRange, int xRange, int yRange, int cutoff);
+  void calculateFittingErrors(LinkedList ***data3D, vector<Circle> &circles, int minRadius );
 
 
-    vector<Circle> houghTransform(int **dataIn, int dataNumRows, int dataNumCols, int maxGreyValue, int minRadius, int maxRadius)
+  /* NOTE - call this function from external files! */
+  vector<Circle> houghTransform(int **dataIn, int dataNumRows, int dataNumCols, int maxGreyValue, int minRadius, int maxRadius)
   {
     // var initialization
-    int *** accumulator;
+    LinkedList *** accumulator;
+    Node* node;
     int radiusRange = maxRadius - minRadius + 1;
     int yRange = dataNumCols * 2;
     int xRange = dataNumRows * 2;
@@ -59,18 +68,19 @@ namespace maxHoughTransform {
 
     // fill accumulator array with 0s
     // dimensions: [0..radiusRange][0..yRange][0..xRange]
-    accumulator = new int**[radiusRange];
+    accumulator = new LinkedList**[radiusRange];
 
     for(int r = 0; r < radiusRange; r++) {
 
-      accumulator[r] = new int*[yRange];
+      accumulator[r] = new LinkedList*[yRange];
       for(int y = 0; y < yRange; y++) {
 
-        accumulator[r][y] = new int[xRange];
+        accumulator[r][y] = new LinkedList[xRange];
         for(int x = 0; x < xRange; x++) {
 
-          // set each element to 0
-          accumulator[r][y][x] = 0;
+          // set each element to an empty LinkedList
+          accumulator[r][y][x].totalVotes = 0;
+          accumulator[r][y][x].start = NULL;
         }
       }
     }
@@ -102,7 +112,21 @@ namespace maxHoughTransform {
 
               // error checking for out of range votes
               if( xI >= 0 && xI < xRange && yI >= 0 && yI < yRange ) {
-                accumulator[rI][yI][xI]++;
+
+                // increment number of votes
+                accumulator[rI][yI][xI].totalVotes++;
+
+                // append the coordinates of the voter's cell to this cell in
+                // the accumulator array
+                if(accumulator[rI][yI][xI].start == NULL) {
+                  accumulator[rI][yI][xI].start = new Node(a, b, NULL);
+                } else {
+                  node = accumulator[rI][yI][xI].start;
+                  while(node->next != NULL)
+                    node = node->next;
+
+                  node->next = new Node(a, b, NULL);
+                }
               }
 
             }
@@ -118,8 +142,8 @@ namespace maxHoughTransform {
     for(int r = 0; r < radiusRange; r++) {
       for(int y = 0; y < yRange; y++) {
         for(int x = 0; x < xRange; x++) {
-          if (accumulator[r][y][x] > maxVotes)
-            maxVotes = accumulator[r][y][x];
+          if (accumulator[r][y][x].totalVotes > maxVotes)
+            maxVotes = accumulator[r][y][x].totalVotes;
         }
       }
     }
@@ -165,6 +189,11 @@ namespace maxHoughTransform {
     // perform final voting
     circles = doVoting(accumulator, minRadius, radiusRange, xRange, yRange, cutoff);
 
+
+    // calculate fitting error of circles
+//    calculateFittingErrors(accumulator, circles, minRadius);
+
+
     if(HT_DEBUG) cout << "DEBUG: completed hough transform." << endl;
 
     // return [r,y,x] of cells that represent circles (after voting and thinning)
@@ -172,7 +201,7 @@ namespace maxHoughTransform {
   }
 
 
-  vector<Circle> doVoting(int ***data3D, int minRadius, int radiusRange, int xRange, int yRange, int cutoff)
+  vector<Circle> doVoting(LinkedList ***data3D, int minRadius, int radiusRange, int xRange, int yRange, int cutoff)
   {
     // var initialization
     Circle circle;
@@ -185,7 +214,7 @@ namespace maxHoughTransform {
         for(int x = 0; x < xRange; x++) {
 
           // relative thresholding
-          if( data3D[r][y][x] > cutoff) {
+          if( data3D[r][y][x].totalVotes > cutoff) {
             circle.r = r + minRadius;
             circle.y = y;
             circle.x = x;
@@ -199,20 +228,17 @@ namespace maxHoughTransform {
     return circles;
   }
 
-  void doHorizontalThinning(int ***data2D, int xRange, int yRange, int cutoff)
+  void doHorizontalThinning(LinkedList ***data2D, int xRange, int yRange, int cutoff)
   {
     // var initialization
     double staticPercentageRetained = 0.00;
     double voteAdjustmentPerNeighbor = 0.25;
     int passingNeighbors;
 
-    // DEBUG
-    int cellsAdjusted = 0;
-
     for(int y = 0; y < yRange; y++) {
       for(int x = 0; x < xRange; x++) {
 
-        if( (*data2D)[y][x] > cutoff) {
+        if( (*data2D)[y][x].totalVotes > cutoff) {
           passingNeighbors = 0;
 
           // check each neighbor cell, tally how many neighbor cells
@@ -220,25 +246,25 @@ namespace maxHoughTransform {
 
           // neighbor above
           if( y - 1 > 0 ) {
-            if( (*data2D)[y-1][x] > cutoff)
+            if( (*data2D)[y-1][x].totalVotes > cutoff)
               passingNeighbors++;
           }
 
           // neighbor below
           if( y + 1 < yRange ) {
-            if( (*data2D)[y+1][x] > cutoff)
+            if( (*data2D)[y+1][x].totalVotes > cutoff)
               passingNeighbors++;
           }
 
           // neighbor to the left
           if( x - 1 > 0 ) {
-            if( (*data2D)[y][x-1] > cutoff)
+            if( (*data2D)[y][x-1].totalVotes > cutoff)
               passingNeighbors++;
           }
 
           // neighbor to the right
           if( x + 1 > 0 ) {
-            if( (*data2D)[y][x+1] > cutoff)
+            if( (*data2D)[y][x+1].totalVotes > cutoff)
               passingNeighbors++;
           }
 
@@ -246,35 +272,20 @@ namespace maxHoughTransform {
           // meaning none of their neighbors are "passing"
           if(passingNeighbors > 0) {
 
-//            cout << "DEBUG - passingNeighbors: " << passingNeighbors << endl;
-//            cout << "number of votes at [" << y << "][" << x << "] before thinning: " << (*data2D)[y][x] << endl;
-
             // adjust the number of votes for the cell at (x,y) based on how
             // many of its neighbors also had passing votes
             // (the goal is to eliminate cells without many "passing" neighbors)
             // ex:              (           .20           + (           0.20          *        3        )  => 0.80
-            (*data2D)[y][x] *= ( staticPercentageRetained + (voteAdjustmentPerNeighbor * passingNeighbors) );
-
-//            cout << "number of votes at [" << y << "][" << x << "] after thinning: " << (*data2D)[y][x] << endl;
-
-            // DEBUG
-            cellsAdjusted++;
+            (*data2D)[y][x].totalVotes *= ( staticPercentageRetained + (voteAdjustmentPerNeighbor * passingNeighbors) );
           }
 
-
-
-
         }
-
       }
     }
-
-    // DEBUG
-//    cout << "cells adjusted by thinning: " << cellsAdjusted << endl;
   }
 
 
-  void doVerticalThinning(int ****data3D, int radiusRange, int xRange, int yRange, int cutoff)
+  void doVerticalThinning(LinkedList ****data3D, int radiusRange, int xRange, int yRange, int cutoff)
   {
     // var initialization
     double staticPercentageRetained = 0.5;
@@ -286,7 +297,7 @@ namespace maxHoughTransform {
       for (int y = 0; y < yRange; y++) {
         for (int x = 0; x < xRange; x++) {
 
-          if( (*data3D)[r][y][x] > cutoff) {
+          if( (*data3D)[r][y][x].totalVotes > cutoff) {
             passingNeighbors = 0;
 
             // check the (x,y) cell with a radius one greater and one less
@@ -295,29 +306,25 @@ namespace maxHoughTransform {
 
             // neighbor "above"
             if( r + 1 < radiusRange ) {
-              if( (*data3D)[r+1][y][x] > cutoff)
+              if( (*data3D)[r+1][y][x].totalVotes > cutoff)
                 passingNeighbors++;
             }
 
             // neighbor "below"
             if( r - 1 >= 0 ) {
-              if( (*data3D)[r-1][y][x] > cutoff)
+              if( (*data3D)[r-1][y][x].totalVotes > cutoff)
                 passingNeighbors++;
             }
 
             // only adjust votes on cells that have at least one neighbor
             if(passingNeighbors > 0) {
 
-//              cout << "number of votes at [" << r << "][" << y << "][" << x << "] before thinning: " << (*data3D)[r][y][x] << endl;
-
-
               // adjust the number of votes for the cell at (x,y) based on how
               // many of its neighbors also had passing votes
               // (the goal is to eliminate cells without many "passing" neighbors)
               // ex:                (            0.70          + (           0.15          *        1        )  => 0.85
-              (*data3D)[r][y][x] *= ( staticPercentageRetained + (voteAdjustmentPerNeighbor * passingNeighbors) );
+              (*data3D)[r][y][x].totalVotes *= ( staticPercentageRetained + (voteAdjustmentPerNeighbor * passingNeighbors) );
 
-//              cout << "number of votes at [" << r << "][" << y << "][" << x << "] after thinning: " << (*data3D)[r][y][x] << endl;
             }
           }
 
@@ -328,6 +335,50 @@ namespace maxHoughTransform {
 
   }
 
+
+  void calculateFittingErrors(LinkedList ***data3D, vector<Circle> &circles, int minRadius )
+  {
+    // var initialization
+    Node* node;
+    int r, y, x;
+    int xCenter, yCenter;
+    int xDiffSquared, yDiffSquared;
+    int sum;
+    int totalNodes;
+
+    for(int c = 0; c < circles.size(); c++) {
+      cout << "DEBUG - checking circle " << c << endl;
+
+      sum = 0;
+      r = circles[c].r - minRadius;
+      yCenter = circles[c].y;
+      xCenter = circles[c].x;
+
+      cout << "data from circle.....r: " << r << ", yCenter: " << yCenter << ", xCenter: " << xCenter << endl;
+      cout << "data3D[r][y][x].totalVotes: " << data3D[r][y][x].totalVotes << endl;
+      cout << "data3D[r][y][x].start: " << data3D[r][y][x].start << endl;
+
+      totalNodes = data3D[r][y][x].totalVotes;
+      node = data3D[r][y][x].start;
+
+      cout << "DEBUG - gathered all data." << endl;
+
+      // calculate how far from the circle each point was that voted for that circle, and add those distances
+      while(node != NULL) {
+
+        xDiffSquared = pow( xCenter - node->x, 2);
+        yDiffSquared = pow( yCenter - node->y, 2);
+
+        sum += abs( sqrt( xDiffSquared + yDiffSquared) - r );
+        node = node->next;
+      }
+
+      cout << "calculated sum, sum: " << sum << endl;
+
+      // calculate the fitting error
+      circles[c].fittingError = float( sum * 1.0 / totalNodes );
+    }
+  }
 
 }
 #endif
