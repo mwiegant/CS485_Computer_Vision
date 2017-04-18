@@ -36,25 +36,28 @@ int main(int argc, char** argv)
   minRadius = atoi(argv[3]);
   maxRadius = atoi(argv[4]);
 
+  cout << "image: " << argv[1] << endl;
   cout << "threshold: " << threshold << endl;
   cout << "minRadius: " << minRadius << endl;
   cout << "maxRadius: " << maxRadius << endl;
-  cout << "DEBUG - STARTING -- SOBEL EDGE DETECTION." << endl << endl;
+//  cout << "DEBUG - STARTING -- SOBEL EDGE DETECTION." << endl;
 
   // apply edge detection
   performSobelEdgeDetection(&fileImageData, numRows, numColumns, maxGreyValue, threshold, &thresholdedData);
 
-  cout << "DEBUG - STARTING -- HOUGH TRANSFORM." << endl << endl;
+//  cout << "DEBUG - STARTING -- HOUGH TRANSFORM." << endl;
 
   // apply hough transform
   circles = houghTransform(thresholdedData, numRows, numColumns, maxGreyValue, minRadius, maxRadius);
 
-  // DEBUG - print circle data
-  cout << "DEBUG - found " << circles.size() << " circles." << endl;
+  // print circle data
+  cout << "Detected " << circles.size() << " circles." << endl;
   string text;
+  cout << "Circles:" << endl;
   for(int i = 0; i < circles.size(); i++) {
-    text = "Circle......... x: " + to_string(circles[i].x) + ", y: " + to_string(circles[i].y) + ", r: " + to_string(circles[i].r);
-    text += ", fittingError: " + to_string(circles[i].fittingError);
+    text = "  R: " + to_string(circles[i].r);
+    text += ", Ctr: (" + to_string(circles[i].x) + "," + to_string(circles[i].y) + ")";
+    text += ", FitError: " + to_string(circles[i].fittingError);
     cout << text << endl;
   }
 
@@ -92,7 +95,7 @@ int main(int argc, char** argv)
     WritePGMImage(fileOut.c_str(), circleImageThresholded, numRows, numColumns, maxGreyValue);
   }
 
-  cout << "INFO - Successfully completed program." << endl;
+//  cout << "INFO - Successfully completed program." << endl;
 
   return 0;
 }
